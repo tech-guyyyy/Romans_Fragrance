@@ -141,6 +141,75 @@
     .row{flex-wrap:wrap;}
     main{padding:6vh 6vw;}
   }
+
+  /* ---- Tabs ---- */
+  .tabs{display:flex; margin-bottom:28px;}
+  .tab-btn{
+    padding:12px 28px; font-size:0.82rem; letter-spacing:0.04em; cursor:pointer;
+    border:1px solid var(--line); background:#fff; color:#6b665c;
+    font-family:'Jost'; transition:background .2s, color .2s, border-color .2s;
+  }
+  .tab-btn + .tab-btn{border-left:none;}
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .tab-panel h3{font-size:1.25rem; margin-bottom:20px;}
+
+  /* ---- Bulk add ---- */
+  .bulk-card{
+    background:#fff; border:1px solid var(--line); padding:32px;
+    box-shadow:var(--shadow-card); margin-bottom:60px;
+  }
+  .bulk-file-row input[type=file]{font-family:'Jost'; font-size:0.85rem;}
+  .bulk-hint{font-size:0.78rem; color:#8a857a; margin-top:10px;}
+  .bulk-msg{
+    padding:14px 16px; margin-top:20px; font-size:0.85rem;
+    border-left:3px solid var(--gold); background:var(--paper); display:none;
+  }
+  .bulk-msg.success{border-color:#3f7d4f; color:#2c5c39;}
+  .bulk-msg.warn{border-color:var(--gold); color:var(--gold-deep);}
+  .bulk-msg.error{border-color:var(--danger); color:var(--danger);}
+  .bulk-toolbar{
+    display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;
+    padding:18px; background:var(--paper); border:1px solid var(--line);
+    margin-top:26px; margin-bottom:24px; display:none;
+  }
+  .bulk-toolbar .field{flex:1; min-width:180px; margin:0;}
+  .bulk-progress{
+    font-size:0.85rem; color:var(--gold-deep); margin-bottom:18px; display:none;
+  }
+  .bulk-progress .bar{
+    height:4px; background:var(--line); margin-top:8px; overflow:hidden;
+  }
+  .bulk-progress .bar span{
+    display:block; height:100%; background:var(--gold); width:0%; transition:width .2s ease;
+  }
+  .bulk-rows{display:flex; flex-direction:column; gap:14px; margin-bottom:8px;}
+  .bulk-row{
+    display:flex; flex-wrap:wrap; align-items:center; gap:18px;
+    border:1px solid var(--line); background:var(--paper); padding:14px 16px;
+  }
+  .bulk-row.has-error{border-color:var(--danger); background:rgba(138,59,47,0.06);}
+  .bulk-thumb{
+    width:64px; height:64px; object-fit:cover; border:1px solid var(--line);
+    background:var(--paper-2); flex-shrink:0;
+  }
+  .bulk-fields{display:flex; flex:1; flex-wrap:wrap; gap:14px; min-width:260px;}
+  .bulk-fields .field{flex:1; min-width:140px; margin:0;}
+  .bulk-fields .field.bulk-price{max-width:150px;}
+  .bulk-fields .field label{margin-bottom:6px;}
+  .bulk-remove{
+    background:none; border:1px solid var(--line); color:var(--danger);
+    width:34px; height:34px; font-size:1.15rem; line-height:1; cursor:pointer;
+    flex-shrink:0; transition:border-color .2s;
+  }
+  .bulk-remove:hover{border-color:var(--danger);}
+  .bulk-row-msg{flex-basis:100%; color:var(--danger); font-size:0.78rem;}
+  .bulk-empty{text-align:center; padding:44px 0; color:#8a857a; font-family:'Playfair Display'; font-size:1.1rem;}
+
+  @media (max-width:640px){
+    .bulk-toolbar{flex-direction:column; align-items:stretch;}
+    .tab-btn{padding:12px 18px; flex:1; text-align:center;}
+  }
 </style>
 </head>
 <body>
@@ -164,31 +233,75 @@
       Changes you make here save live to the shared store database — any customer visiting the storefront on their own phone will see your edits.
     </div>
 
-    <div class="section-title"><h2 id="formTitle">Add a fragrance</h2></div>
-    <form id="productForm" onsubmit="return saveProduct(event)">
-      <input type="hidden" id="editId" value="">
-      <div class="field full">
-        <label>Name</label>
-        <input type="text" id="fName" placeholder="e.g. Al Dirgham" required>
+    <div class="section-title"><h2>Add fragrances</h2></div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" id="tabBtnOne" onclick="switchTab('one')">Add one</button>
+      <button type="button" class="tab-btn" id="tabBtnMany" onclick="switchTab('many')">Add many</button>
+    </div>
+
+    <div class="tab-panel" id="panelOne">
+      <h3 id="formTitle">Add a fragrance</h3>
+      <form id="productForm" onsubmit="return saveProduct(event)">
+        <input type="hidden" id="editId" value="">
+        <div class="field full">
+          <label>Name</label>
+          <input type="text" id="fName" placeholder="e.g. Al Dirgham" required>
+        </div>
+        <div class="field full">
+          <label>Description / notes</label>
+          <textarea id="fNote" placeholder="e.g. Ard Al Zaafaran &middot; 100ml"></textarea>
+        </div>
+        <div class="field">
+          <label>Price (&#8358;)</label>
+          <input type="number" id="fPrice" placeholder="25000" min="0" required>
+        </div>
+        <div class="field">
+          <label>Product photo</label>
+          <input type="file" id="fImage" accept="image/*">
+          <img id="fPreview" class="img-preview" style="display:none;">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="cancelEditBtn" onclick="resetForm()" style="display:none;">Cancel edit</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">Add fragrance</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="tab-panel" id="panelMany" style="display:none;">
+      <h3>Bulk add fragrances</h3>
+      <div class="bulk-card">
+        <div class="bulk-file-row">
+          <label style="display:block; font-size:0.75rem; letter-spacing:0.07em; color:var(--gold-deep); margin-bottom:8px;">Product photos</label>
+          <input type="file" id="bulkFileInput" accept="image/*" multiple>
+          <div class="bulk-hint">Select several photos at once — one row will appear per photo. You can select more photos later; they'll be added to the rows below, not replace them.</div>
+        </div>
+
+        <div class="bulk-toolbar" id="bulkToolbar">
+          <div class="field">
+            <label>Apply this price to all (&#8358;)</label>
+            <input type="number" id="bulkApplyPrice" min="0" placeholder="25000">
+          </div>
+          <button type="button" class="btn btn-ghost" onclick="applyPriceToAll()">Apply</button>
+        </div>
+
+        <div class="bulk-progress" id="bulkProgress">
+          <span id="bulkProgressLabel">Uploading…</span>
+          <div class="bar"><span id="bulkProgressBar"></span></div>
+        </div>
+
+        <div class="bulk-msg" id="bulkMsg"></div>
+
+        <div class="bulk-rows" id="bulkRows">
+          <div class="bulk-empty">Select photos above to begin.</div>
+        </div>
+
+        <div class="form-actions" style="margin-top:8px;">
+          <button type="button" class="btn btn-ghost" id="bulkClearBtn" onclick="resetBulkForm()" style="display:none;">Clear all</button>
+          <button type="button" class="btn btn-primary" id="bulkSaveBtn" onclick="saveAllBulk()" style="display:none;">Save all</button>
+        </div>
       </div>
-      <div class="field full">
-        <label>Description / notes</label>
-        <textarea id="fNote" placeholder="e.g. Ard Al Zaafaran &middot; 100ml"></textarea>
-      </div>
-      <div class="field">
-        <label>Price (&#8358;)</label>
-        <input type="number" id="fPrice" placeholder="25000" min="0" required>
-      </div>
-      <div class="field">
-        <label>Product photo</label>
-        <input type="file" id="fImage" accept="image/*">
-        <img id="fPreview" class="img-preview" style="display:none;">
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-ghost" id="cancelEditBtn" onclick="resetForm()" style="display:none;">Cancel edit</button>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Add fragrance</button>
-      </div>
-    </form>
+    </div>
 
     <div class="section-title"><h2>Current fragrances</h2><span id="countLabel" style="font-size:0.8rem;color:#6b6255;font-style:italic;"></span></div>
     <div class="list" id="productList"></div>
@@ -272,18 +385,24 @@ function renderList(){
   `).join('');
 }
 
-// Uploads the pending file to the product-images bucket and returns its public URL
-async function uploadPendingImage(){
-  if(!pendingImageFile) return null;
-  const ext = (pendingImageFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+// Shared upload helper — used by both the single-add form and the bulk-add form.
+// Uploads one File to the product-images bucket and returns its public URL (or throws).
+async function uploadImageFile(file){
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
   const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-  const { error: upErr } = await sb.storage.from(IMAGE_BUCKET).upload(path, pendingImageFile, {
+  const { error: upErr } = await sb.storage.from(IMAGE_BUCKET).upload(path, file, {
     cacheControl: '3600',
     upsert: false
   });
   if(upErr) throw upErr;
   const { data } = sb.storage.from(IMAGE_BUCKET).getPublicUrl(path);
   return data.publicUrl;
+}
+
+// Kept for the single-add form's existing call sites.
+async function uploadPendingImage(){
+  if(!pendingImageFile) return null;
+  return uploadImageFile(pendingImageFile);
 }
 
 async function saveProduct(evt){
@@ -334,6 +453,7 @@ async function saveProduct(evt){
 function editProduct(id){
   const p = PRODUCTS.find(x => x.id == id);
   if(!p) return;
+  switchTab('one');
   document.getElementById('editId').value = p.id;
   document.getElementById('fName').value = p.name;
   document.getElementById('fNote').value = p.note || '';
@@ -370,6 +490,273 @@ function resetForm(){
   document.getElementById('formTitle').textContent = 'Add a fragrance';
   document.getElementById('submitBtn').textContent = 'Add fragrance';
   document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+/* =========================================================
+   Bulk add
+   ========================================================= */
+
+function switchTab(which){
+  const isOne = which === 'one';
+  document.getElementById('tabBtnOne').classList.toggle('active', isOne);
+  document.getElementById('tabBtnMany').classList.toggle('active', !isOne);
+  document.getElementById('panelOne').style.display = isOne ? 'block' : 'none';
+  document.getElementById('panelMany').style.display = isOne ? 'none' : 'block';
+}
+
+let bulkItems = [];      // { id, file, previewUrl, name, note, price, invalid, error, uploadedUrl }
+let bulkIdCounter = 0;
+
+function escapeAttr(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeHtml(str){ return escapeAttr(str); }
+
+document.getElementById('bulkFileInput').addEventListener('change', function(e){
+  const files = Array.from(e.target.files || []);
+  let skipped = 0;
+  files.forEach(file => {
+    if(!file.type || !file.type.startsWith('image/')){
+      skipped++;
+      return;
+    }
+    bulkItems.push({
+      id: ++bulkIdCounter,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      name: '',
+      note: '',
+      price: '',
+      invalid: false,
+      error: null,
+      uploadedUrl: null
+    });
+  });
+  // Reset the input so choosing the exact same file(s) again still fires 'change'
+  // (this is what makes "append more photos" work).
+  e.target.value = '';
+
+  if(skipped > 0){
+    setBulkMessage(`Skipped ${skipped} file${skipped === 1 ? '' : 's'} that ${skipped === 1 ? "wasn't" : "weren't"} images.`, 'warn');
+  } else {
+    clearBulkMessage();
+  }
+  renderBulkRows();
+});
+
+function updateBulkItem(id, field, value){
+  const item = bulkItems.find(it => it.id === id);
+  if(!item) return;
+  item[field] = value;
+  if(item.invalid) item.invalid = false; // clear highlight as soon as they start fixing it
+}
+
+function removeBulkRow(id){
+  const item = bulkItems.find(it => it.id === id);
+  if(item) URL.revokeObjectURL(item.previewUrl);
+  bulkItems = bulkItems.filter(it => it.id !== id);
+  renderBulkRows();
+}
+
+function applyPriceToAll(){
+  const val = document.getElementById('bulkApplyPrice').value;
+  if(val === '' || isNaN(Number(val)) || Number(val) < 0){
+    alert('Enter a valid price to apply to every row.');
+    return;
+  }
+  bulkItems.forEach(item => { item.price = val; item.invalid = false; });
+  renderBulkRows();
+}
+
+function renderBulkRows(){
+  const container = document.getElementById('bulkRows');
+  const toolbar = document.getElementById('bulkToolbar');
+  const saveBtn = document.getElementById('bulkSaveBtn');
+  const clearBtn = document.getElementById('bulkClearBtn');
+
+  if(bulkItems.length === 0){
+    container.innerHTML = `<div class="bulk-empty">Select photos above to begin.</div>`;
+    toolbar.style.display = 'none';
+    saveBtn.style.display = 'none';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  toolbar.style.display = 'flex';
+  saveBtn.style.display = 'inline-block';
+  clearBtn.style.display = 'inline-block';
+
+  container.innerHTML = bulkItems.map(item => {
+    const rowClass = (item.invalid || item.error) ? 'bulk-row has-error' : 'bulk-row';
+    const msg = item.error
+      ? `<div class="bulk-row-msg">Failed: ${escapeHtml(item.error)}</div>`
+      : (item.invalid ? `<div class="bulk-row-msg">Name and price are required</div>` : '');
+    return `
+    <div class="${rowClass}" id="bulkRow-${item.id}">
+      <img class="bulk-thumb" src="${item.previewUrl}" alt="">
+      <div class="bulk-fields">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" value="${escapeAttr(item.name)}" placeholder="e.g. Al Dirgham"
+                 oninput="updateBulkItem(${item.id}, 'name', this.value)">
+        </div>
+        <div class="field">
+          <label>Note / description</label>
+          <input type="text" value="${escapeAttr(item.note)}" placeholder="optional"
+                 oninput="updateBulkItem(${item.id}, 'note', this.value)">
+        </div>
+        <div class="field bulk-price">
+          <label>Price (&#8358;)</label>
+          <input type="number" min="0" value="${escapeAttr(item.price)}" placeholder="25000"
+                 oninput="updateBulkItem(${item.id}, 'price', this.value)">
+        </div>
+      </div>
+      <button type="button" class="bulk-remove" title="Remove this photo" onclick="removeBulkRow(${item.id})">&times;</button>
+      ${msg}
+    </div>`;
+  }).join('');
+}
+
+function setBulkMessage(text, type){
+  const el = document.getElementById('bulkMsg');
+  el.textContent = text;
+  el.className = 'bulk-msg ' + type;
+  el.style.display = 'block';
+}
+function clearBulkMessage(){
+  const el = document.getElementById('bulkMsg');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+function updateBulkProgress(done, total){
+  const wrap = document.getElementById('bulkProgress');
+  const label = document.getElementById('bulkProgressLabel');
+  const bar = document.getElementById('bulkProgressBar');
+  wrap.style.display = 'block';
+  label.textContent = `Uploading ${done} of ${total}…`;
+  bar.style.width = total ? `${Math.round((done / total) * 100)}%` : '0%';
+}
+
+// Uploads every item's file with limited concurrency, calling onProgress(done, total) as each finishes.
+async function uploadAllBulkImages(items, onProgress){
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  let completed = 0;
+  const concurrency = Math.min(4, items.length);
+
+  async function worker(){
+    while(nextIndex < items.length){
+      const myIndex = nextIndex++;
+      const item = items[myIndex];
+      try{
+        const url = await uploadImageFile(item.file);
+        results[myIndex] = { ok: true, url };
+      } catch(err){
+        results[myIndex] = { ok: false, error: (err && err.message) ? err.message : String(err) };
+      }
+      completed++;
+      onProgress(completed, items.length);
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return results;
+}
+
+async function saveAllBulk(){
+  if(bulkItems.length === 0) return;
+  clearBulkMessage();
+
+  // Validate every row first — stop and highlight before uploading anything.
+  let firstInvalidId = null;
+  bulkItems.forEach(item => {
+    const missingName = !item.name || !item.name.trim();
+    const missingPrice = item.price === '' || item.price === null || item.price === undefined || isNaN(Number(item.price)) || Number(item.price) < 0;
+    item.invalid = missingName || missingPrice;
+    if(item.invalid && firstInvalidId === null) firstInvalidId = item.id;
+  });
+  renderBulkRows();
+
+  if(firstInvalidId !== null){
+    document.getElementById(`bulkRow-${firstInvalidId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setBulkMessage('Every fragrance needs a name and a price — fix the highlighted row(s) and try again.', 'error');
+    return;
+  }
+
+  const saveBtn = document.getElementById('bulkSaveBtn');
+  saveBtn.disabled = true;
+  const originalLabel = saveBtn.textContent;
+  saveBtn.textContent = 'Saving…';
+
+  const items = bulkItems;
+  updateBulkProgress(0, items.length);
+
+  const results = await uploadAllBulkImages(items, updateBulkProgress);
+
+  items.forEach((item, i) => {
+    const r = results[i];
+    if(r.ok){
+      item.uploadedUrl = r.url;
+      item.error = null;
+    } else {
+      item.error = r.error;
+    }
+  });
+
+  const readyToInsert = items.filter(it => it.uploadedUrl && !it.error);
+  const rowsForInsert = readyToInsert.map(it => ({
+    name: it.name.trim(),
+    note: it.note.trim(),
+    price: Number(it.price),
+    img: it.uploadedUrl
+  }));
+
+  let insertedCount = 0;
+  if(rowsForInsert.length > 0){
+    const { error: insertErr } = await sb.from('products').insert(rowsForInsert);
+    if(insertErr){
+      // Images uploaded fine but the batch insert itself failed — surface it on every
+      // otherwise-successful row so nothing is silently dropped.
+      readyToInsert.forEach(it => { it.error = 'Could not save to database: ' + insertErr.message; });
+    } else {
+      insertedCount = rowsForInsert.length;
+      const insertedIds = new Set(readyToInsert.map(it => it.id));
+      bulkItems = items.filter(it => !insertedIds.has(it.id));
+    }
+  }
+
+  document.getElementById('bulkProgress').style.display = 'none';
+  saveBtn.disabled = false;
+  saveBtn.textContent = originalLabel;
+  renderBulkRows();
+
+  const stillFailed = bulkItems.filter(it => it.error);
+
+  if(insertedCount > 0) await refreshList();
+
+  if(insertedCount > 0 && stillFailed.length === 0){
+    setBulkMessage(`${insertedCount} fragrance${insertedCount === 1 ? '' : 's'} added.`, 'success');
+    resetBulkForm();
+  } else if(insertedCount > 0 && stillFailed.length > 0){
+    setBulkMessage(
+      `${insertedCount} fragrance${insertedCount === 1 ? '' : 's'} added. ${stillFailed.length} row${stillFailed.length === 1 ? '' : 's'} failed — see the details below and try saving again.`,
+      'warn'
+    );
+  } else {
+    setBulkMessage('Could not save any fragrances — see the details below and try again.', 'error');
+  }
+}
+
+function resetBulkForm(){
+  bulkItems.forEach(item => URL.revokeObjectURL(item.previewUrl));
+  bulkItems = [];
+  document.getElementById('bulkApplyPrice').value = '';
+  document.getElementById('bulkFileInput').value = '';
+  document.getElementById('bulkProgress').style.display = 'none';
+  clearBulkMessage();
+  renderBulkRows();
 }
 </script>
 </body>

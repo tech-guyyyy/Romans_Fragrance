@@ -68,6 +68,24 @@
   }
   nav a:hover{opacity:1; color:var(--gold-deep);}
   nav a:hover::after{transform:scaleX(1);}
+
+  /* ---------- MOBILE NAV (hamburger) ---------- */
+  .hamburger-btn{
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:5px; flex:none;
+    width:38px; height:38px; border:1px solid var(--line); background:none;
+    cursor:pointer; padding:0;
+  }
+  .hamburger-btn span{display:block; width:18px; height:2px; background:var(--ink); transition:background .2s;}
+  .hamburger-btn:hover{border-color:var(--gold);}
+  .hamburger-btn:hover span{background:var(--gold-deep);}
+  .mnav-links{display:flex; flex-direction:column; gap:0; padding:10px 28px 20px;}
+  .mnav-links a{
+    display:block; padding:16px 0; font-family:'Jost', sans-serif; font-size:1rem;
+    color:var(--ink); opacity:0.82; border-bottom:1px solid var(--line);
+    transition:opacity .2s, color .2s;
+  }
+  .mnav-links a:hover{opacity:1; color:var(--gold-deep);}
   .cart-btn{
     position:relative; border:1px solid var(--ink); background:none;
     padding:10px 20px; font-family:'Jost',sans-serif; font-size:0.8rem;
@@ -277,6 +295,7 @@
   @media (max-width: 860px){
     .grid{grid-template-columns:repeat(2,1fr); gap:30px 18px;}
     nav{display:none;}
+    .hamburger-btn{display:flex;}
     .section{padding:6vh 6vw 8vh;}
     .catalog-banner{padding:7vh 6vw 6vh;}
   }
@@ -299,6 +318,9 @@
 
 <header>
   <div class="brand">
+    <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Open menu" aria-controls="mobileNavDrawer" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
     <img src="logo.png" alt="Roman's Fragrance logo">
     <div class="brand-text">
       <div class="name">Roman's Fragrance</div>
@@ -366,6 +388,19 @@
     <button class="whatsapp-btn" onclick="sendOrder()">Place Order</button>
     <div class="df-note">You'll confirm final price & delivery with Roman directly.</div>
   </div>
+</div>
+
+<div class="overlay" id="mnavOverlay" onclick="closeMobileNav()"></div>
+<div class="drawer" id="mobileNavDrawer">
+  <div class="drawer-head">
+    <h3>Menu</h3>
+    <button onclick="closeMobileNav()" aria-label="Close menu">&times;</button>
+  </div>
+  <nav class="mnav-links">
+    <a href="index.html#shop" onclick="closeMobileNav()">Shop</a>
+    <a href="index.html#about" onclick="closeMobileNav()">About</a>
+    <a href="index.html#contact" onclick="closeMobileNav()">Contact</a>
+  </nav>
 </div>
 
 <script>
@@ -505,6 +540,20 @@ function closeCart(){
   document.getElementById('drawer').classList.remove('show');
   document.getElementById('overlay').classList.remove('show');
 }
+
+function openMobileNav(){
+  document.getElementById('mobileNavDrawer').classList.add('show');
+  document.getElementById('mnavOverlay').classList.add('show');
+  document.querySelector('.hamburger-btn').setAttribute('aria-expanded', 'true');
+}
+function closeMobileNav(){
+  document.getElementById('mobileNavDrawer').classList.remove('show');
+  document.getElementById('mnavOverlay').classList.remove('show');
+  document.querySelector('.hamburger-btn').setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeMobileNav();
+});
 
 function sendOrder(){
   const ids = Object.keys(cart);
